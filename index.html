@@ -60,9 +60,20 @@ h2{font-family:var(--serif);font-weight:500;font-size:clamp(30px,4vw,46px);line-
 #dang-ky{text-align:center}
 #dang-ky h2{margin:0 auto 16px}
 #dang-ky .sub{margin:0 auto 40px}
-#dang-ky [data-form-button]{background:#fff!important;color:var(--ink)!important;font:600 17px/1 var(--sans)!important;padding:22px 56px!important;border-radius:0!important;letter-spacing:.02em;box-shadow:0 0 0 6px rgba(255,255,255,.14),0 12px 40px rgba(255,255,255,.18);transition:transform .2s,box-shadow .2s,background .2s,color .2s}
-#dang-ky [data-form-button]:hover{transform:translateY(-3px);box-shadow:0 0 0 10px rgba(255,255,255,.18),0 16px 48px rgba(255,255,255,.28);filter:none!important}
-#dang-ky [data-form-button]:after{content:" \2192"}
+#orderForm{max-width:680px;margin:0 auto;text-align:left;position:relative}
+#orderForm .row{display:grid;grid-template-columns:1fr 1fr;gap:28px;margin-bottom:28px}
+#orderForm .row.one{grid-template-columns:1fr}
+#orderForm label{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#a3a3a3;display:block}
+#orderForm input,#orderForm select,#orderForm textarea{display:block;width:100%;margin-top:8px;padding:10px 0;background:transparent;border:0;border-bottom:1px solid #444;color:#fff;font:400 16px var(--sans);letter-spacing:0;text-transform:none;border-radius:0;outline:0;transition:border-color .2s}
+#orderForm textarea{resize:vertical}
+#orderForm select option{color:#0a0a0a}
+#orderForm input:focus,#orderForm select:focus,#orderForm textarea:focus{border-bottom-color:#fff}
+#orderForm ::placeholder{color:#666}
+#orderForm .submit{display:block;width:100%;margin-top:16px;padding:22px;background:#fff;color:var(--ink);border:1px solid #fff;font:600 17px var(--sans);letter-spacing:.02em;cursor:pointer;box-shadow:0 0 0 6px rgba(255,255,255,.14),0 12px 40px rgba(255,255,255,.18);transition:transform .2s,background .2s,color .2s}
+#orderForm .submit:hover{background:var(--ink);color:#fff;transform:translateY(-2px)}
+#orderForm .submit:disabled{opacity:.6;cursor:wait;transform:none}
+#formMsg{margin-top:20px;text-align:center;font-size:14px;min-height:22px}
+#formMsg.ok{color:#d4d4d4}#formMsg.err{color:#ff8a8a}
 footer{background:var(--ink);color:#737373;border-top:1px solid #222;font-size:13px;padding:40px 0}
 footer .wrap{display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px}
 @media(max-width:820px){
@@ -75,6 +86,7 @@ nav ul{display:none}
 section{padding:64px 0}
 .card{padding:28px}
 .card .media{margin:-28px -28px 24px}
+#orderForm .row{grid-template-columns:1fr;gap:24px}
 }
 </style>
 </head>
@@ -135,113 +147,49 @@ section{padding:64px 0}
 <h2>Sẵn sàng nâng cấp văn phòng?</h2>
 <p class="sub">Để lại thông tin đơn hàng, chúng tôi sẽ liên hệ và gửi báo giá phù hợp với doanh nghiệp của bạn.</p>
 
-<button type="button" data-form-open="https://form.base.com.vn/f/NrLcw2st65sdBWotBy2iKtS5AAHqR4h?embed=1" data-form-button data-bg="#e2e3e5" data-color="#0a0e17">Đăng ký đơn hàng</button>
+<form id="orderForm" novalidate>
+<div class="row">
+<label>Họ và tên *<input name="name" required autocomplete="name"></label>
+<label>Số điện thoại *<input name="phone" type="tel" required autocomplete="tel" inputmode="tel"></label>
+</div>
+<div class="row">
+<label>Email *<input name="email" type="email" required autocomplete="email"></label>
+<label>Tên doanh nghiệp *<input name="company" required autocomplete="organization"></label>
+</div>
+<div class="row">
+<label>Quy mô nhân sự
+<select name="size"><option value="">Chọn quy mô</option><option>1 - 9 người</option><option>10 - 49 người</option><option>50 - 199 người</option><option>200 - 999 người</option><option>Từ 1.000 người</option></select></label>
+<label>Sản phẩm quan tâm *
+<select name="product" required><option value="">Chọn sản phẩm</option><option>Bàn ghế văn phòng</option><option>Màn hình máy tính</option><option>Cả hai</option></select></label>
+</div>
+<div class="row one">
+<label>Số lượng dự kiến<input name="qty" placeholder="Ví dụ: 30 bộ bàn ghế, 30 màn hình"></label>
+</div>
+<div class="row one">
+<label>Ghi chú<textarea name="note" rows="3" placeholder="Yêu cầu thêm về cấu hình, thời gian giao hàng..."></textarea></label>
+</div>
+<input type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px">
+<button type="submit" class="submit">Đăng ký đơn hàng</button>
+<p id="formMsg" role="status" aria-live="polite"></p>
+</form>
 <script>
 (function () {
-if (window.FormEmbed) { window.FormEmbed.scan(); return; }
-function withQuery(src) {
-var u = new URL(src, location.href);
-new URLSearchParams(location.search).forEach(function (v, k) { u.searchParams.set(k, v); });
-u.searchParams.set('embed', '1');
-return u.toString();
-}
-var frames = [];
-function track(f, on) {
-var entry = { f: f, origin: new URL(f.src).origin, on: on };
-frames.push(entry);
-return function () { frames.splice(frames.indexOf(entry), 1); };
-}
-window.addEventListener('message', function (e) {
-if (!e.data || typeof e.data.type !== 'string') return;
-for (var i = 0; i < frames.length; i++) {
-if (frames[i].f.contentWindow === e.source && frames[i].origin === e.origin) frames[i].on(e.data);
-}
+// Dán link Web App của Google Apps Script (kết thúc bằng /exec) vào đây
+var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxCbcN53cLdS7Q_oHpYOZf7Ts1vpK9xMz_N6nKbEjx5PydPMT7M6lathB3Ge4PX4RJ9/exec';
+var form = document.getElementById('orderForm');
+var msg = document.getElementById('formMsg');
+var btn = form.querySelector('.submit');
+function say(t, ok) { msg.textContent = t; msg.className = ok ? 'ok' : 'err'; }
+form.addEventListener('submit', function (e) {
+e.preventDefault();
+if (!form.checkValidity()) { form.reportValidity(); return; }
+if (SCRIPT_URL.indexOf('https://script.google.com/') !== 0) { say('Biểu mẫu chưa được kết nối. Vui lòng liên hệ hotline.', false); return; }
+btn.disabled = true; say('Đang gửi...', true);
+fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: new URLSearchParams(new FormData(form)) })
+.then(function () { form.reset(); say('Cảm ơn bạn! Chúng tôi đã nhận thông tin và sẽ liên hệ trong ngày làm việc.', true); })
+.catch(function () { say('Gửi không thành công, vui lòng thử lại hoặc gọi hotline.', false); })
+.then(function () { btn.disabled = false; });
 });
-function initInline(f) {
-var src = withQuery(f.src);
-if (src !== f.src) f.src = src;
-track(f, function (d) {
-if (d.type === 'form-embed:height') f.style.height = d.height + 'px';
-if (d.type === 'form-embed:scroll' && f.getBoundingClientRect().top < 0) f.scrollIntoView({ behavior: 'smooth' });
-});
-}
-function initSidetab(b) {
-if (!b.title) b.title = b.textContent.trim();
-b.style.cssText += ';position:fixed;right:0;top:50%;writing-mode:vertical-rl;transform:translateY(-50%) rotate(180deg);' +
-'z-index:2147482000;padding:14px 8px;border:0;border-radius:0 8px 8px 0;font:600 13px/1.2 sans-serif;cursor:pointer;' +
-'max-height:min(240px,50vh);overflow:hidden;white-space:nowrap;text-overflow:ellipsis;box-shadow:2px 0 10px rgba(0,0,0,.12);' +
-'background:' + (b.getAttribute('data-bg') || '#2563eb') + ';color:' + (b.getAttribute('data-color') || '#ffffff');
-}
-function initButton(b) {
-b.style.cssText += ';padding:8px 14px;border:0;border-radius:8px;font:600 13px/1.2 sans-serif;cursor:pointer;' +
-'background:' + (b.getAttribute('data-bg') || '#2563eb') + ';color:' + (b.getAttribute('data-color') || '#ffffff');
-b.addEventListener('mouseenter', function () { b.style.filter = 'brightness(.95)'; });
-b.addEventListener('mouseleave', function () { b.style.filter = ''; });
-}
-function injectStyle() {
-if (document.getElementById('wf-overlay-style')) return;
-var st = document.createElement('style');
-st.id = 'wf-overlay-style';
-st.textContent =
-'#wf-overlay .wf-close{position:absolute;top:-14px;right:-14px;width:28px;height:28px;display:flex;align-items:center;justify-content:center;' +
-'padding:0;border:0;border-radius:50%;background:#fff;color:#64748b;font:400 20px/1 sans-serif;cursor:pointer;' +
-'box-shadow:0 1px 4px rgba(0,0,0,.12);transition:background .15s,color .15s}' +
-'#wf-overlay .wf-close:hover{background:#f1f5f9;color:#334155}' +
-'#wf-overlay .wf-close:focus-visible{outline:2px solid #fff;outline-offset:2px}';
-document.head.appendChild(st);
-}
-function open(url) {
-if (document.getElementById('wf-overlay')) return;
-injectStyle();
-var o = document.createElement('div');
-o.id = 'wf-overlay';
-o.style.cssText = 'position:fixed;inset:0;z-index:2147483000;background:rgba(15,23,42,.55);display:flex;align-items:flex-start;justify-content:center;padding:max(24px,min(10vh,80px)) 20px 20px';
-var box = document.createElement('div');
-box.style.cssText = 'position:relative;width:100%;max-width:640px';
-var f = document.createElement('iframe');
-f.src = withQuery(url);
-f.title = 'Form';
-function cap() { return innerHeight - Math.max(24, Math.min(innerHeight * 0.1, 80)) - 20; }
-f.style.cssText = 'display:block;width:100%;height:' + Math.min(820, cap()) + 'px;border:0;border-radius:12px;background:#fff';
-var h = 0;
-function fit() { if (h) f.style.height = Math.min(h, cap()) + 'px'; }
-var untrack = track(f, function (d) { if (d.type === 'form-embed:height') { h = d.height; fit(); } });
-window.addEventListener('resize', fit);
-var c = document.createElement('button');
-c.type = 'button';
-c.className = 'wf-close';
-c.textContent = '\u00d7';
-c.setAttribute('aria-label', 'Close');
-function onKey(e) { if (e.key === 'Escape') close(); }
-document.addEventListener('keydown', onKey);
-function close() {
-o.remove(); untrack();
-window.removeEventListener('resize', fit);
-document.removeEventListener('keydown', onKey);
-}
-c.onclick = close;
-o.onclick = function (e) { if (e.target === o) close(); };
-box.appendChild(f);
-box.appendChild(c);
-o.appendChild(box);
-document.body.appendChild(o);
-}
-document.addEventListener('click', function (e) {
-var t = e.target.closest && e.target.closest('[data-form-open]');
-if (t) { e.preventDefault(); open(t.getAttribute('data-form-open')); }
-});
-function each(selector, fn) {
-var list = document.querySelectorAll(selector + ':not([data-form-ready])');
-for (var i = 0; i < list.length; i++) { list[i].setAttribute('data-form-ready', ''); fn(list[i]); }
-}
-function scan() {
-each('iframe[data-form-embed]', initInline);
-each('[data-form-sidetab]', initSidetab);
-each('[data-form-button]', initButton);
-}
-window.FormEmbed = { scan: scan, open: open };
-scan();
-if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', scan);
 })();
 </script>
 
